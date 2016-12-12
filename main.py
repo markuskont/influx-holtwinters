@@ -58,7 +58,7 @@ def parse_arguments():
     parser.add_argument('-t', '--time', default=86400, type=int)
     parser.add_argument('-b', '--bucket', default='1h')
     parser.add_argument('--test', action='store_true', default=False)
-    parser.add_argument('-s', '--seasons', default=24)
+    parser.add_argument('-s', '--seasons', default=0)
     return parser.parse_args()
 
 def parseConfig(file):
@@ -75,7 +75,7 @@ def getPeriod(interval=60):
 
 def holtwintersQuery(value, predictions, seasons, measurement, start, stop, bucket, group):
     group_by = ", ".join(group)
-    return """select holt_winters(mean("%s"), %s, %s) from %s
+    return """select holt_winters(last("%s"), %s, %s) from %s
                 WHERE time >= \'%s\'
                 AND time <= \'%s\'
                 GROUP BY time(%s), %s """ % (
