@@ -16,7 +16,7 @@ MEASUREMENTS= [
         'measurement_in': 'elasticsearch_jvm',
         'value_in': 'mem_heap_used_percent',
         'measurement_out': MEASUREMENT_OUT,
-        'value_out': 'jvm_heap_used_percent',
+        'value_out': 'es_jvm_heap_used_percent',
         'group': [
             'node_name'
         ]
@@ -58,6 +58,7 @@ def parse_arguments():
     parser.add_argument('-t', '--time', default=86400, type=int)
     parser.add_argument('-b', '--bucket', default='1h')
     parser.add_argument('--test', action='store_true', default=False)
+    parser.add_argument('-s', '--seasons', default=24)
     return parser.parse_args()
 
 def parseConfig(file):
@@ -72,14 +73,15 @@ def getPeriod(interval=60):
     then = str(datetime.datetime.fromtimestamp(then_epoch).strftime(timeformat))
     return then, now
 
-def holtwintersQuery(value, predictions, measurement, start, stop, bucket, group):
+def holtwintersQuery(value, predictions, seasons, measurement, start, stop, bucket, group):
     group_by = ", ".join(group)
-    return """select holt_winters(mean("%s"), %s, 0) from %s
+    return """select holt_winters(mean("%s"), %s, %s) from %s
                 WHERE time >= \'%s\'
                 AND time <= \'%s\'
                 GROUP BY time(%s), %s """ % (
                     value,
                     predictions,
+                    seasons,
                     measurement,
                     start,
                     stop,
@@ -117,6 +119,7 @@ def main():
         q = holtwintersQuery(
             value=query['value_in'],
             predictions=args.predictions,
+            seasons=args.seasons,
             measurement=query['measurement_in'],
             start=then,
             stop=now,
@@ -125,7 +128,6 @@ def main():
         )
         results = db_in.query(q)
         for res in results._get_series():
-            #print res
             for prediction in res['values']:
                 json = {
                     'time': prediction[0],
