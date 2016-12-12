@@ -1,0 +1,18 @@
+input:
+  host: 'FQDN'
+  port: 8086
+  database: 'telegraf'
+  username: 'USER'
+  password: 'PASS'
+  ssl: True
+  verify_ssl: False
+
+# Predicted points will be written back to $input if separate output db is undefined
+#output:
+#  host: 'FQDN'
+#  port: 8086
+#  database: 'telegraf'
+#  username: 'USER'
+#  password: 'PASS'
+#  ssl: True
+#  verify_ssl: False
